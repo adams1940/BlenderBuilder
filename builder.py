@@ -131,7 +131,7 @@ class BlenderObject:
         bpy.data.objects.remove(other.obj, do_unlink=True)
         other.obj = None  # Ensure the reference to the deleted object is cleared
 
-class Block(BlenderObject):
+class BlenderBlock(BlenderObject):
     def __init__(self, length, width, height):
         # Define the 8 vertices of the block (a rectangular prism)
         vertices = [
@@ -169,19 +169,3 @@ class Block(BlenderObject):
         # select the object and set it as active
         bpy.context.view_layer.objects.active = self.obj
         self.obj.select_set(True)
-
-# Delete all objects in the scene
-bpy.ops.object.select_all(action='SELECT')
-bpy.ops.object.delete(use_global=False)
-
-# Example usage:
-# Create a block with length=2, width=1, height=3
-block1 = Block(1,1,1)
-block1.align(center_x=0, center_y=0, center_z=0)
-block1.build()
-
-block2 = Block(1,1,1)
-block2.build()
-
-# Remove block2 from block1
-block1.remove(block2)
