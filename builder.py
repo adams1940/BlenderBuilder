@@ -8,10 +8,10 @@ class BlenderObject:
         self.extrusion_length = extrusion_length
   
     # a method to shift the vertices of the object
-    def shift(self, shift_vector):
-        shift_vector = Vector(shift_vector)
-        for vertex in self.vertices:
-            vertex += shift_vector
+    def shift(self, shift_x, shift_y, shift_z):
+        shift_vector = Vector([shift_x, shift_y, shift_z])
+        for i in range(len(self.vertices)):
+            self.vertices[i] += shift_vector
 
     # a method to build the object
     def build(self):
@@ -46,4 +46,6 @@ bpy.ops.object.delete(use_global=False)
 
 # create a test cube
 vertices = [(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0)]
-BlenderObject(vertices, 'z', 1).build()
+test_cube = BlenderObject(vertices, 'z', 1)
+test_cube.shift(-0.5,-0.5,-0.5)
+test_cube.build()
