@@ -13,6 +13,53 @@ class BlenderObject:
         for i in range(len(self.vertices)):
             self.vertices[i] += shift_vector
 
+    def align(
+        self,
+        bottom_x=None, bottom_y=None, bottom_z=None,
+        center_x=None, center_y=None, center_z=None,
+        top_x=None, top_y=None, top_z=None
+    ):
+        # Calculate the center of the object
+        center = Vector([0, 0, 0])
+        for v in self.vertices:
+            center += v
+        center /= len(self.vertices)
+        
+        # Calculate the bottom of the object
+        bottom = Vector([0, 0, 0])
+        for v in self.vertices:
+            bottom = Vector([min(bottom[i], v[i]) for i in range(3)])
+        
+        # Calculate the top of the object
+        top = Vector([0, 0, 0])
+        for v in self.vertices:
+            top = Vector([max(top[i], v[i]) for i in range(3)])
+        
+        # Calculate the shift vector
+        shift_vector = Vector([0, 0, 0])
+        if bottom_x is not None:
+            shift_vector[0] = bottom_x - bottom[0]
+        if bottom_y is not None:
+            shift_vector[1] = bottom_y - bottom[1]
+        if bottom_z is not None:
+            shift_vector[2] = bottom_z - bottom[2]
+        if center_x is not None:
+            shift_vector[0] = center_x - center[0]
+        if center_y is not None:
+            shift_vector[1] = center_y - center[1]
+        if center_z is not None:
+            shift_vector[2] = center_z - center[2]
+        if top_x is not None:
+            shift_vector[0] = top_x - top[0]
+        if top_y is not None:
+            shift_vector[1] = top_y - top[1]
+        if top_z is not None:
+            shift_vector[2] = top_z - top[2]
+        
+        # Shift the vertices
+        for i in range(len(self.vertices)):
+            self.vertices[i] += shift_vector
+
     # a method to build the object
     def build(self):
         # create a new mesh
@@ -48,4 +95,5 @@ bpy.ops.object.delete(use_global=False)
 vertices = [(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0)]
 test_cube = BlenderObject(vertices, 'z', 1)
 test_cube.shift(-0.5,-0.5,-0.5)
+test_cube.align(bottom_x=0, bottom_y=0)
 test_cube.build()
