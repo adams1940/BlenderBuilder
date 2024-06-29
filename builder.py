@@ -59,6 +59,25 @@ class BlenderObject:
         # Shift the vertices
         for i in range(len(self.vertices)):
             self.vertices[i] += shift_vector
+    
+    def bottom_x(self):
+        return min([v[0] for v in self.vertices])
+    def bottom_y(self):
+        return min([v[1] for v in self.vertices])
+    def bottom_z(self):
+        return min([v[2] for v in self.vertices])
+    def center_x(self):
+        return sum([v[0] for v in self.vertices]) / len(self.vertices)
+    def center_y(self):
+        return sum([v[1] for v in self.vertices]) / len(self.vertices)
+    def center_z(self):
+        return sum([v[2] for v in self.vertices]) / len(self.vertices)
+    def top_x(self):
+        return max([v[0] for v in self.vertices])
+    def top_y(self):
+        return max([v[1] for v in self.vertices])
+    def top_z(self):
+        return max([v[2] for v in self.vertices])
 
     # a method to build the object
     def build(self):
@@ -93,7 +112,10 @@ bpy.ops.object.delete(use_global=False)
 
 # create a test cube
 vertices = [(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0)]
-test_cube = BlenderObject(vertices, 'z', 1)
-test_cube.shift(-0.5,-0.5,-0.5)
-test_cube.align(bottom_x=0, bottom_y=0)
-test_cube.build()
+test_cube_1 = BlenderObject(vertices, 'z', 1)
+test_cube_1.shift(-0.5,-0.5,-0.5)
+test_cube_1.align(bottom_x=0, bottom_y=0)
+test_cube_2 = BlenderObject(vertices, 'z', 1)
+test_cube_2.align(center_x=test_cube_1.center_x(), center_y=test_cube_1.center_y(), bottom_z=test_cube_1.top_z())
+test_cube_1.build()
+test_cube_2.build()
