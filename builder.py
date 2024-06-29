@@ -6,7 +6,8 @@ class BlenderObject:
         self.vertices = [Vector(v) for v in vertices]
         self.extrusion_direction = extrusion_direction.lower()
         self.extrusion_length = extrusion_length
-  
+        self.obj = None  # Initialize obj as None
+
     # a method to shift the vertices of the object
     def shift(self, shift_x, shift_y, shift_z):
         shift_vector = Vector([shift_x, shift_y, shift_z])
@@ -87,12 +88,12 @@ class BlenderObject:
         mesh.update()
         
         # create an object from the mesh
-        obj = bpy.data.objects.new('object', mesh)
-        bpy.context.collection.objects.link(obj)
+        self.obj = bpy.data.objects.new('object', mesh)
+        bpy.context.collection.objects.link(self.obj)
         
         # select the object and set it as active
-        bpy.context.view_layer.objects.active = obj
-        obj.select_set(True)
+        bpy.context.view_layer.objects.active = self.obj
+        self.obj.select_set(True)
         
         # extrude the object in either x, y, or z direction
         bpy.ops.object.mode_set(mode='EDIT')
@@ -105,7 +106,31 @@ class BlenderObject:
             )}
         )
         bpy.ops.object.mode_set(mode='OBJECT')
+
+    # a method to remove another object from this object using a boolean operation
+    def remove(self, other):
+        # Ensure both objects exist
+        if self.obj is None or other.obj is None:
+            raise ValueError("Both objects must be built before performing boolean operations.")
+
+        # Select both objects
+        bpy.context.view_layer.objects.active = self.obj
+        self.obj.select_set(True)
+        other.obj.select_set(True)
+
+        # Add and apply boolean modifier
+        boolean_modifier = self.obj.modifiers.new(name="Boolean", type='BOOLEAN')
+        boolean_modifier.operation = 'DIFFERENCE'
+        boolean_modifier.object = other.obj
+        bpy.ops.object.modifier_apply(modifier=boolean_modifier.name)
         
+        # Deselect the other object
+        other.obj.select_set(False)
+
+        # Delete the other object
+        bpy.data.objects.remove(other.obj, do_unlink=True)
+        other.obj = None  # Ensure the reference to the deleted object is cleared
+
 class Block(BlenderObject):
     def __init__(self, length, width, height):
         # Define the 8 vertices of the block (a rectangular prism)
@@ -138,23 +163,25 @@ class Block(BlenderObject):
         mesh.update()
         
         # create an object from the mesh
-        obj = bpy.data.objects.new('Block', mesh)
-        bpy.context.collection.objects.link(obj)
+        self.obj = bpy.data.objects.new('Block', mesh)
+        bpy.context.collection.objects.link(self.obj)
         
         # select the object and set it as active
-        bpy.context.view_layer.objects.active = obj
-        obj.select_set(True)
+        bpy.context.view_layer.objects.active = self.obj
+        self.obj.select_set(True)
 
 # Delete all objects in the scene
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete(use_global=False)
 
-# create a test cube
-vertices = [(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0)]
-test_cube_1 = Block(1,1,1)
-test_cube_1.shift(-0.5,-0.5,-0.5)
-test_cube_1.align(bottom_x=0, bottom_y=0)
-test_cube_2 = BlenderObject(vertices, 'z', 1)
-test_cube_2.align(center_x=test_cube_1.center_x(), center_y=test_cube_1.center_y(), bottom_z=test_cube_1.top_z())
-test_cube_1.build()
-test_cube_2.build()
+# Example usage:
+# Create a block with length=2, width=1, height=3
+block1 = Block(1,1,1)
+block1.align(center_x=0, center_y=0, center_z=0)
+block1.build()
+
+block2 = Block(1,1,1)
+block2.build()
+
+# Remove block2 from block1
+block1.remove(block2)
