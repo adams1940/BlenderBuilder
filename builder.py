@@ -105,6 +105,45 @@ class BlenderObject:
             )}
         )
         bpy.ops.object.mode_set(mode='OBJECT')
+        
+class Block(BlenderObject):
+    def __init__(self, length, width, height):
+        # Define the 8 vertices of the block (a rectangular prism)
+        vertices = [
+            (0, 0, 0),
+            (length, 0, 0),
+            (length, width, 0),
+            (0, width, 0),
+            (0, 0, height),
+            (length, 0, height),
+            (length, width, height),
+            (0, width, height)
+        ]
+        # We do not need to extrude since we already define the height
+        super().__init__(vertices, '', 0)
+
+    def build(self):
+        # create a new mesh
+        mesh = bpy.data.meshes.new('BlockMesh')
+        # Define faces for the rectangular prism
+        faces = [
+            (0, 1, 2, 3),  # bottom face
+            (4, 5, 6, 7),  # top face
+            (0, 1, 5, 4),  # side face 1
+            (1, 2, 6, 5),  # side face 2
+            (2, 3, 7, 6),  # side face 3
+            (3, 0, 4, 7)   # side face 4
+        ]
+        mesh.from_pydata(self.vertices, [], faces)
+        mesh.update()
+        
+        # create an object from the mesh
+        obj = bpy.data.objects.new('Block', mesh)
+        bpy.context.collection.objects.link(obj)
+        
+        # select the object and set it as active
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
 
 # Delete all objects in the scene
 bpy.ops.object.select_all(action='SELECT')
@@ -112,7 +151,7 @@ bpy.ops.object.delete(use_global=False)
 
 # create a test cube
 vertices = [(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0)]
-test_cube_1 = BlenderObject(vertices, 'z', 1)
+test_cube_1 = Block(1,1,1)
 test_cube_1.shift(-0.5,-0.5,-0.5)
 test_cube_1.align(bottom_x=0, bottom_y=0)
 test_cube_2 = BlenderObject(vertices, 'z', 1)
